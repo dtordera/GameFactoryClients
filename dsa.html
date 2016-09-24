@@ -1,0 +1,21 @@
+<html>
+  <head>
+    <title>Maze generator</title>
+    <style>
+    </style>
+      <script type="application/javascript">
+          function doSpace()
+          {
+              var canvas = document.getElementById("_canvas");
+              var ctx = canvas.getContext("2D");
+              
+              ctx.fillStyle("#000000");
+              ctx.fillRect(0,0,canvas.width,canvas.height);
+          }
+
+      </script>
+  </head>
+  <body bgcolor="" onloadeddata="doSpace()">
+      <canvas id="_canvas"  style="border:1px solid #d3d3d3;" width="0" height="0"></canvas><br><br>
+  </body>
+</html>

@@ -1,0 +1,102 @@
+<html>
+  <head>
+    <title>LightSpeed</title>
+    <style>
+    </style>
+      <script type="application/javascript">
+          var stars = [];
+          var ox=0,oy=0;
+          var _NUMSTARS = 700;
+          var Area = 
+              {
+                  canvas : document.createElement("canvas"),
+                  start  : function()
+                  {        
+                      
+                      this.canvas.width = 500;
+                      this.canvas.height = 500;
+//                      this.canvas.style.cursor = "none";
+                      this.context = this.canvas.getContext("2d");
+                      this.context.lineWidth = 2;
+                      
+                      for (var i=0;i<_NUMSTARS;i++)
+                      {
+                        var s = new component(250, 250, i*5);
+                        stars.push(s);   
+                      }
+                      
+                      document.body.insertBefore(this.canvas,document.body.childNodes[0]);
+                      
+                      this.interval = setInterval(updateArea, 20);
+                        window.addEventListener('mousemove', function (e) {
+                        ox = e.pageX;
+                        oy = e.pageY;                  
+                      });                      
+                  },
+                  clear : function()
+                  {
+                        this.context.fillStyle = "#000000";
+                        this.context.fillRect(0,0,this.canvas.width,this.canvas.height);
+                  }
+              }        
+          
+          function Space()
+          {
+              Area.start();
+          }
+                              
+          function component(x,y,r)
+          {
+              this.x = x;
+              this.y = y;
+              this.r = r;
+                                          
+              this.update = function()
+              {
+                  ctx = Area.context;
+                                
+                  ctx.strokeStyle = toColor(-(this.r*2000 & 0xFFFF00));
+                  
+                  ctx.beginPath();
+                  ctx.arc(this.x,this.y,this.r,0,2*Math.PI);                  
+//                  ctx.closePath();         
+                  ctx.stroke();
+                  
+                  this.r++;                  
+                  if (this.r > 2*Area.canvas.clientWidth/3) 
+                      this.reset();                  
+              }
+              
+              this.reset = function()
+              {
+                  this.x = ox;
+                  this.y = oy;                                    
+                  this.r = 30;
+              }                 
+          }
+          
+          function updateArea()
+          {
+              Area.clear(); 
+                                   
+              for (var i=0;i<_NUMSTARS;i++)
+                  stars[i].update();
+              
+//              Area.context.stroke();
+          }
+
+          function toColor(num) 
+          {
+                num >>>= 0;
+                var b = num & 0xFF,
+                g = (num & 0xFF00) >>> 8,
+                r = (num & 0xFF0000) >>> 16,
+                a = ( (num & 0xFF000000) >>> 24 ) / 255 ;
+                return "rgba(" + [r, g, b, a].join(",") + ")";
+          }          
+          
+      </script>
+  </head>
+  <body onload="Space()" >
+  </body>
+</html>
