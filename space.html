@@ -11,8 +11,7 @@
               {
                   canvas : document.createElement("canvas"),
                   start  : function()
-                  {        
-                      
+                  {                              
                       this.canvas.width = 500;
                       this.canvas.height = 500;
 //                      this.canvas.style.cursor = "none";
@@ -24,10 +23,9 @@
                         var s = new component(250, 250, i*5);
                         stars.push(s);   
                       }
+                                            document.body.insertBefore(this.canvas,document.body.childNodes[0]);
                       
-                      document.body.insertBefore(this.canvas,document.body.childNodes[0]);
-                      
-                      this.interval = setInterval(updateArea, 20);
+                      this.interval = setInterval(updateArea, 1);
                         window.addEventListener('mousemove', function (e) {
                         ox = e.pageX;
                         oy = e.pageY;                  
