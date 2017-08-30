@@ -18,6 +18,7 @@
 		<script src="./Projector.js"></script>
 		<script src="./CanvasRenderer.js"></script>
 		<script src="./stats.js"></script>
+        <script src="./OrbitControls.js"></script>
 		<script>
             
             // Lets draw map!
@@ -30,18 +31,24 @@
                 var o = 0;
                 var d;
                 
-				var material = new THREE.MeshLambertMaterial( { color: 0xffffff, overdraw: 0.5 } );                                          
+				var material = new THREE.MeshLambertMaterial( { color: 0xffffff, overdraw: 0.5 } );         
+                
+                var geometry = new THREE.BoxGeometry(0,0,0);
+                fullmesh = new THREE.Mesh(geometry, material);
+                
                 for (var x=0;x<w;x++)
                 for (var y=0;y<h;y++)
                 {                
                     d = ~c.charCodeAt(x + y*w); // making NOT. Easier and faster (not to compare to exact number each time, just true/false)
                                                                                                    
                     // Let's masking to bits 1,2,3,4, and depending on result, paint a wall or not.
-                    if (d & 1) { paintRightWall(x,y,scene, material); }
-                    if (d & 2) { paintUpWall(x,y,scene, material);    }                 
-                    if (d & 4) { paintLeftWall(x,y,scene, material);  }          
-                    if (d & 8) { paintDownWall(x,y,scene, material);  }                                                         
+                    if (d & 1) { paintRightWall(x,y,fullmesh, material); }
+                    if (d & 2) { paintUpWall(x,y,fullmesh, material);    }                 
+                    if (d & 4) { paintLeftWall(x,y,fullmesh, material);  }          
+                    if (d & 8) { paintDownWall(x,y,fullmesh, material);  }                                                         
                 }                       
+                
+                scene.add(fullmesh);
             }           
             
             // generate a 'cube' mesh
@@ -121,10 +128,54 @@
 
 			var container, stats;
 			var camera, scene, renderer;
+            var fullmesh;
 			var frustumSize = 1000;
+			var controls;
+            var play = true;
+            var light1, light2, light3; 
+            
+            function toggle()
+            {
+                play = !play;
+            }
 
 			init();
 			animate();
+            
+            function regenerate(scene)
+            {
+                console.log("here");
+                scene.remove(fullmesh);
+                scene.remove(light1);
+                scene.remove(light2);
+                scene.remove(light3);
+                getmaze(scene);
+                generatelights();
+            }
+            
+            function generatelights()
+            {			
+                light1 = new THREE.DirectionalLight( Math.random() * 0xffffff );
+				light1.position.x = Math.random() + 0.5;
+				light1.position.y = Math.random() + 0.5;
+				light1.position.z = Math.random() + 0.5;
+				light1.position.normalize();
+				scene.add(light1);
+
+				light2 = new THREE.DirectionalLight( Math.random() * 0xffffff );
+				light2.position.x = Math.random() - 0.5;
+				light2.position.y = Math.random() - 0.5;
+				light2.position.z = Math.random() - 0.5;
+				light2.position.normalize();
+                scene.add(light2);
+
+				light3 = new THREE.DirectionalLight( Math.random() * 0xffffff );
+				light3.position.x = Math.random() - 1;
+				light3.position.y = Math.random() - 1;
+				light3.position.z = Math.random() - 1;
+				light3.position.normalize();
+                scene.add(light3);                         
+            }
 
 			function init() {
 
@@ -136,7 +187,7 @@
 				info.style.top = '10px';
 				info.style.width = '100%';
 				info.style.textAlign = 'center';
-				info.innerHTML = '<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - maze 3D';
+                info.innerHTML = '<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - maze 3D<br>Use mouse LEFT button for orbit, MIDDLE for zoom<br><input type="checkbox" onclick="toggle()">stop/play</input>   <button onclick="regenerate(scene)">Generate maze</button>';
 				container.appendChild(info);
 
 				var aspect = window.innerWidth / window.innerHeight;
@@ -145,7 +196,9 @@
                 console.log(aspect);
 				camera = new THREE.PerspectiveCamera( 60, aspect, 1, 10000);                          
 				camera.position.y = 500;
-
+								
+                controls = new THREE.OrbitControls(camera);				
+				
 				scene = new THREE.Scene();
 				scene.background = new THREE.Color( 0xf0f0f0 );
 
@@ -159,27 +212,8 @@
 				// Lights
 				var ambientLight = new THREE.AmbientLight( Math.random() * 0x10 );
 				scene.add( ambientLight );
-
-				var directionalLight = new THREE.DirectionalLight( Math.random() * 0xffffff );
-				directionalLight.position.x = Math.random() + 0.5;
-				directionalLight.position.y = Math.random() + 0.5;
-				directionalLight.position.z = Math.random() + 0.5;
-				directionalLight.position.normalize();
-				scene.add( directionalLight );
-
-				var directionalLight = new THREE.DirectionalLight( Math.random() * 0xffffff );
-				directionalLight.position.x = Math.random() - 0.5;
-				directionalLight.position.y = Math.random() - 0.5;
-				directionalLight.position.z = Math.random() - 0.5;
-				directionalLight.position.normalize();
-                scene.add( directionalLight );
-
-				var directionalLight = new THREE.DirectionalLight( Math.random() * 0xffffff );
-				directionalLight.position.x = Math.random() - 1;
-				directionalLight.position.y = Math.random() - 1;
-				directionalLight.position.z = Math.random() - 1;
-				directionalLight.position.normalize();
-                scene.add( directionalLight );          
+	        
+                generatelights();
                 
 				renderer = new THREE.CanvasRenderer();
 				renderer.setPixelRatio( window.devicePixelRatio );
@@ -196,7 +230,7 @@
 			function onWindowResize() {
 
 				var aspect = window.innerWidth / window.innerHeight;
-
+                    
                 camera.aspect = window.innerWidth/ window.innerHeight;
 				camera.updateProjectionMatrix();
 
@@ -216,8 +250,11 @@
 
 				var timer = Date.now() * 0.0001;
 
-				camera.position.x = Math.cos( timer ) * 1000;
-				camera.position.z = Math.sin( timer ) * 1000;
+                if (play)
+                {
+				    camera.position.x = Math.cos( timer ) * 1000;
+				    camera.position.z = Math.sin( timer ) * 1000;
+                }
                 
 				camera.lookAt( scene.position );
 
